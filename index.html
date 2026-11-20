@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -68,7 +68,7 @@ body{
 .batt::after{content:"";position:absolute;right:-3px;top:3px;width:2px;height:4px;background:var(--ink);border-radius:0 2px 2px 0}
 .batt i{display:block;height:100%;background:var(--ink);border-radius:1px;width:78%}
 
-#app{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none}
+#app{flex:1;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none;padding-top:14px}
 #app::-webkit-scrollbar{display:none}
 .page{animation:fade .32s ease;min-height:100%}
 @keyframes fade{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
@@ -585,9 +585,10 @@ body.mobile .phone{
 body.mobile .phone::before,body.mobile .phone::after,body.mobile .notch{display:none}
 body.mobile .screen{border-radius:0;height:100dvh}
 body.mobile .statusbar{padding-top:env(safe-area-inset-top);height:calc(46px + env(safe-area-inset-top))}
+body.mobile #app{padding-top:calc(10px + env(safe-area-inset-top))}
 body.mobile .bottom-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
 body.mobile .book-bar,body.mobile .p2-bar,body.mobile .cp-buy-bar{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
-body.mobile .page{min-height:calc(100dvh - 46px)}
+body.mobile .page{min-height:100dvh}
 body.mobile .cp-modal,body.mobile .lightbox{position:fixed}
 @media (max-width:768px){
   body{background:var(--bg);display:block;min-height:100dvh;overflow:auto}
@@ -597,9 +598,10 @@ body.mobile .cp-modal,body.mobile .lightbox{position:fixed}
   .phone::before,.phone::after,.notch{display:none}
   .screen{border-radius:0;height:100dvh}
   .statusbar{padding-top:env(safe-area-inset-top);height:calc(46px + env(safe-area-inset-top))}
+  #app{padding-top:calc(10px + env(safe-area-inset-top))}
   .bottom-nav{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
   .book-bar,.p2-bar,.cp-buy-bar{padding-bottom:calc(14px + env(safe-area-inset-bottom))}
-  .page{min-height:calc(100dvh - 46px)}
+  .page{min-height:100dvh}
   .cp-modal,.lightbox{position:fixed}
 }
 </style>
@@ -616,13 +618,6 @@ body.mobile .cp-modal,body.mobile .lightbox{position:fixed}
   <div class="phone">
     <div class="notch"></div>
     <div class="screen">
-      <div class="statusbar" id="statusbar">
-        <span>9:41</span>
-        <div class="sb-r">
-          <div class="sb-icons"><span class="sig"></span><span class="sig2"></span><span class="wifi"></span></div>
-          <div class="batt"><i></i></div>
-        </div>
-      </div>
       <div id="app"></div>
       <div class="bottom-nav" id="bottomNav"></div>
       <div class="toast" id="toast"></div>
@@ -989,7 +984,9 @@ function pageHome(){
   return `<div class="page">
     <div class="h2-top">
       <div class="h2-logo">Shoott</div>
-      <div class="h2-more" onclick="toggleCity()">···</div>
+      <div class="h2-more" onclick="toggleCity()">
+        <svg viewBox="0 0 24 24" style="width:19px;height:19px;stroke:var(--teal);fill:none;stroke-width:2"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>
+      </div>
     </div>
     <div class="h2-head">
       <h1>Find your perfect<br>photographer</h1>
@@ -1010,7 +1007,7 @@ function pageHome(){
       <span class="see" onclick="go('results')">See all ›</span>
     </div>
     <div class="city-switch" style="display:flex;gap:8px;padding:0 16px 4px">
-      ${['Xi\'an','Kyoto'].map(c=>`<div class="chip ${state.city===c?'':'gray'}" style="cursor:pointer;font-size:10px" onclick="setHomeCity('${c}')">📍 ${c}</div>`).join('')}
+      ${['Xi\'an','Kyoto'].map((c,i)=>`<div class="chip ${state.city===c?'':'gray'}" style="cursor:pointer;font-size:10px" onclick="setHomeCityIdx(${i})">📍 ${c}</div>`).join('')}
     </div>
     <div class="h2-grid">
       ${list.length?list.map(p=>`<div class="h2-card" onclick="openPhotog('${p.id}')">
@@ -1024,6 +1021,9 @@ function pageHome(){
   </div>`;
 }
 function setHomeCity(c){state.city=c;render();toast('switched to '+c)}
+const CITY_LIST=['Xi\'an','Kyoto'];
+function setHomeCityIdx(i){setHomeCity(CITY_LIST[i])}
+function setCityIdx(i){setCity(CITY_LIST[i])}
 function photogCard(p){
   const c=p.collections[0];
   return `<div class="photog-card" onclick="openPhotog('${p.id}')">
@@ -1109,7 +1109,7 @@ function pageFilters(){
     </div>
     <div class="filter-block">
       <div class="filter-title"><span>📍 city and location</span></div>
-      <div class="seg">${['Xi\'an','Kyoto'].map(c=>`<button class="${state.city===c?'on':''}" onclick="setCity('${c}')">${c}</button>`).join('')}</div>
+      <div class="seg">${CITY_LIST.map((c,i)=>`<button class="${state.city===c?'on':''}" onclick="setCityIdx(${i})">${c}</button>`).join('')}</div>
       <div class="tag-grid" style="margin-top:11px">${TAG_GROUPS.location.tags.slice(0,4).map(t=>`<div class="tag-opt ${state.selectedTags.includes(t)?'on':''}" onclick="toggleQuickTag('${t}')">${t}</div>`).join('')}</div>
     </div>
     <div class="filter-block">
@@ -1174,12 +1174,20 @@ function setDelivery(t){state.filters.delivery=t;render()}
 function toggleQuickTag(t){const i=state.selectedTags.indexOf(t);i>=0?state.selectedTags.splice(i,1):state.selectedTags.push(t);render()}
 function setTagAndSearch(t){state.selectedTags=[t];go('results')}
 
+// Normalize search text: lowercase, strip apostrophes/spaces/hyphens so Xian matches Xi'an
+const normText=s=>String(s||'').toLowerCase().replace(/['’`\-\s]/g,'');
+// Everything a photographer can be searched by: name, city, style tags, collection titles and tags
+function photogSearchBlob(p){
+  return normText([p.name,p.city,...p.style,
+    ...p.collections.flatMap(c=>[c.title,...c.tags])].join(' '));
+}
 function filterPhotogs(ignoreCity){
   let list=[...PHOTOGRAPHERS];
   if(!ignoreCity&&state.city!=='all')list=list.filter(p=>p.city===state.city);
   const band=priceBands.find(b=>b.id===state.priceBand);
   if(band&&band.id!=='all')list=list.filter(p=>p.price>=band.min&&p.price<=band.max);
-  if(state.searchText)list=list.filter(p=>[p.name,p.city,...p.style,...p.collections.flatMap(c=>c.tags)].join('').includes(state.searchText));
+  const q=normText(state.searchText);
+  if(q)list=list.filter(p=>photogSearchBlob(p).includes(q));
   if(state.selectedTags.length)list=list.filter(p=>state.selectedTags.some(t=>[p.city,...p.style,...p.collections.flatMap(c=>c.tags)].includes(t)));
   if(state.filters.lang!=='all')list=list.filter(p=>p.langs.includes(state.filters.lang));
   return list;
@@ -1187,7 +1195,8 @@ function filterPhotogs(ignoreCity){
 
 /* ==================== PAGE: RESULTS ==================== */
 function pageResults(){
-  const list=filterPhotogs();
+  // If there is a search keyword, search across all cities; otherwise filter by the current location
+  const list=filterPhotogs(!!normText(state.searchText));
   return `<div class="page">
     <div class="page-head">
       <div class="icon-btn" onclick="go('search')">${icon.back}</div>
